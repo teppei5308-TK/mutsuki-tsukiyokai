@@ -1,0 +1,316 @@
+<!-- ================================================================
+  月夜会 会員登録フォーム（LIFF）
+  設置方法：このHTMLをGitHub Pages等に配置し、LIFFのエンドポイントURLに指定
+  ================================================================ -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>月夜会 会員登録</title>
+
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+<style>
+:root{
+  --navy:#0f1829; --navy2:#1a2744; --navy3:#243352;
+  --gold:#c9a961; --gold-l:#e0c88a;
+  --ivory:#f5f2ea; --dim:#8b93a5; --line:#2c3650; --err:#e0654a;
+  --mincho:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"Noto Serif JP",serif;
+  --sans:"Hiragino Sans","Yu Gothic",YuGothic,"Noto Sans JP",sans-serif;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--navy);color:var(--ivory);
+  font-family:var(--sans);font-size:16px;line-height:1.7;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+.wrap{max-width:480px;margin-inline:auto;padding:0 1.3rem 3rem}
+
+header{text-align:center;padding:2.4rem 1rem 1.6rem}
+header .mark{font-family:var(--mincho);font-size:1.7rem;letter-spacing:.35em;color:var(--gold-l);margin:0 0 .3rem}
+header .sub{font-size:.72rem;letter-spacing:.25em;color:var(--dim);margin:0}
+header .line{width:44px;height:1px;background:var(--gold);margin:1rem auto 0}
+
+.lead{text-align:center;font-size:.88rem;color:#c9cfdb;margin:1.4rem 0 2rem;line-height:1.9}
+.lead b{color:var(--gold-l);font-weight:600}
+
+.field{margin-bottom:1.4rem}
+.field label{display:block;font-size:.82rem;letter-spacing:.06em;margin-bottom:.4rem;color:var(--gold-l)}
+.field label .req{font-size:.66rem;background:var(--gold);color:var(--navy);padding:.1rem .4rem;margin-left:.4rem;font-weight:700;letter-spacing:.04em}
+.field input{
+  width:100%;padding:.85rem .9rem;font-size:16px;
+  background:var(--navy2);border:1px solid var(--line);color:var(--ivory);
+  font-family:var(--sans);border-radius:2px;
+}
+.field input:focus{outline:none;border-color:var(--gold)}
+.field input::placeholder{color:#5c6880}
+.field .hint{font-size:.72rem;color:var(--dim);margin-top:.3rem}
+.field.err input{border-color:var(--err)}
+.field .msg{font-size:.74rem;color:var(--err);margin-top:.3rem;display:none}
+.field.err .msg{display:block}
+
+/* 店名サジェスト */
+.suggest{position:relative}
+.suggest ul{
+  list-style:none;margin:.2rem 0 0;padding:0;
+  position:absolute;left:0;right:0;z-index:20;
+  background:var(--navy2);border:1px solid var(--gold);max-height:180px;overflow-y:auto;
+  display:none;
+}
+.suggest ul.on{display:block}
+.suggest li{padding:.6rem .9rem;font-size:.88rem;cursor:pointer;border-bottom:1px solid var(--line)}
+.suggest li:last-child{border-bottom:none}
+.suggest li:hover,.suggest li.sel{background:var(--navy3);color:var(--gold-l)}
+.suggest li .new{font-size:.7rem;color:var(--gold);margin-left:.4rem}
+
+.staff{
+  background:var(--navy2);border:1px solid var(--line);
+  padding:.7rem .9rem;font-size:.8rem;color:var(--dim);margin-bottom:1.6rem;
+}
+.staff b{color:var(--gold-l);font-weight:600}
+
+button.submit{
+  width:100%;padding:1rem;font-size:.95rem;font-weight:700;letter-spacing:.16em;
+  background:var(--gold);color:var(--navy);border:none;cursor:pointer;
+  font-family:var(--sans);border-radius:2px;
+}
+button.submit:disabled{opacity:.45;cursor:not-allowed}
+button.submit:active{background:var(--gold-l)}
+
+.note{font-size:.72rem;color:var(--dim);text-align:center;margin-top:1.2rem;line-height:1.8}
+
+/* 状態表示 */
+.state{display:none;text-align:center;padding:3rem 1rem}
+.state.on{display:block}
+.state .icon{font-size:2.4rem;margin-bottom:.8rem}
+.state h2{font-family:var(--mincho);font-size:1.2rem;letter-spacing:.14em;margin:0 0 .6rem;font-weight:500}
+.state p{font-size:.86rem;color:#c9cfdb;margin:0 0 .4rem}
+.state .card{
+  background:var(--navy2);border:1px solid var(--gold);
+  padding:1.2rem;margin:1.6rem 0;text-align:left;
+}
+.state .card dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:.4rem 1rem;font-size:.86rem}
+.state .card dt{color:var(--dim);font-size:.78rem}
+.state .card dd{margin:0}
+.spinner{
+  width:34px;height:34px;border:2px solid var(--line);border-top-color:var(--gold);
+  border-radius:50%;margin:0 auto 1rem;animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.spinner{animation:none}}
+</style>
+
+<div class="wrap">
+
+<header>
+  <p class="mark">夢　月</p>
+  <p class="sub">TSUKIYOKAI MEMBER</p>
+  <div class="line"></div>
+</header>
+
+<!-- ===== 読み込み中 ===== -->
+<div class="state on" id="loading">
+  <div class="spinner"></div>
+  <p>読み込んでいます…</p>
+</div>
+
+<!-- ===== 入力フォーム ===== -->
+<div class="state" id="form">
+  <p class="lead">
+    月夜会へのご登録ありがとうございます。<br>
+    ポイントの付与・特典のご案内のため、<br>
+    <b>お名前とお店の名前をお教えください。</b>
+  </p>
+
+  <div class="staff" id="staffBox" style="display:none">
+    ご案内担当：<b id="staffName"></b>
+  </div>
+
+  <div class="field" id="f-name">
+    <label for="name">お名前<span class="req">必須</span></label>
+    <input type="text" id="name" placeholder="源氏名・お名前" autocomplete="name">
+    <p class="msg">お名前をご入力ください</p>
+  </div>
+
+  <div class="field suggest" id="f-shop">
+    <label for="shop">お店の名前<span class="req">必須</span></label>
+    <input type="text" id="shop" placeholder="例：クラブ月" autocomplete="off">
+    <ul id="shopList"></ul>
+    <p class="hint">入力すると候補が表示されます。なければそのままご入力ください</p>
+    <p class="msg">お店の名前をご入力ください</p>
+  </div>
+
+  <button class="submit" id="submit">登 録 す る</button>
+  <p class="note">
+    ご登録いただいた情報は、月夜会のポイント管理・<br>ご連絡のみに使用いたします。
+  </p>
+</div>
+
+<!-- ===== 送信中 ===== -->
+<div class="state" id="sending">
+  <div class="spinner"></div>
+  <p>登録しています…</p>
+</div>
+
+<!-- ===== 完了 ===== -->
+<div class="state" id="done">
+  <div class="icon">🌙</div>
+  <h2>ご登録ありがとうございます</h2>
+  <p>月夜会へのご登録が完了いたしました。</p>
+  <div class="card">
+    <dl>
+      <dt>会員番号</dt><dd id="r-id">—</dd>
+      <dt>お名前</dt><dd id="r-name">—</dd>
+      <dt>お店</dt><dd id="r-shop">—</dd>
+      <dt>ポイント</dt><dd id="r-pt">0 P</dd>
+    </dl>
+  </div>
+  <p style="font-size:.8rem;color:var(--dim)">
+    詳細はLINEのトークにお送りしました。<br>この画面は閉じていただいて構いません。
+  </p>
+</div>
+
+<!-- ===== 登録済み ===== -->
+<div class="state" id="already">
+  <div class="icon">✓</div>
+  <h2>すでにご登録済みです</h2>
+  <div class="card">
+    <dl>
+      <dt>会員番号</dt><dd id="a-id">—</dd>
+      <dt>お名前</dt><dd id="a-name">—</dd>
+      <dt>お店</dt><dd id="a-shop">—</dd>
+      <dt>ポイント</dt><dd id="a-pt">0 P</dd>
+    </dl>
+  </div>
+  <p style="font-size:.8rem;color:var(--dim)">
+    ご変更がある場合は、LINEのトークにご連絡ください。
+  </p>
+</div>
+
+<!-- ===== エラー ===== -->
+<div class="state" id="error">
+  <div class="icon">⚠️</div>
+  <h2>読み込みに失敗しました</h2>
+  <p id="errMsg">お手数ですが、時間をおいて再度お試しください。</p>
+  <p style="font-size:.8rem;color:var(--dim);margin-top:1.2rem">
+    解決しない場合は、LINEのトークにてご連絡ください。
+  </p>
+</div>
+
+</div>
+
+<script>
+/* ====== 設定：この2つを書き換えてください ====== */
+const LIFF_ID = "2011255200-CFSCJNPe";           // LINE Developers で発行したLIFF ID
+const GAS_URL  = "https://script.google.com/macros/s/AKfycbz7fer7Jsfp1VRb_bhaUJsP7PC3D2nZHJ0KYgJLUNPs_i69oWL9mROMNVQ2IagQ01HhyQ/exec";
+/* ============================================== */
+
+const $ = id => document.getElementById(id);
+const show = id => {
+  document.querySelectorAll('.state').forEach(e => e.classList.remove('on'));
+  $(id).classList.add('on');
+};
+
+let userId = null;
+let staffCode = new URLSearchParams(location.search).get('staff') || '';
+let shopMaster = [];
+
+/* ---- 起動 ---- */
+(async () => {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) { liff.login(); return; }
+
+    const profile = await liff.getProfile();
+    userId = profile.userId;
+
+    // liff.state に staff が入る場合の救済
+    if (!staffCode) {
+      const st = new URLSearchParams(location.search).get('liff.state');
+      if (st) staffCode = new URLSearchParams(st.replace(/^\?/, '')).get('staff') || '';
+    }
+
+    const res = await fetch(`${GAS_URL}?action=check&userId=${encodeURIComponent(userId)}`);
+    const data = await res.json();
+
+    shopMaster = data.shops || [];
+
+    if (data.registered) {
+      $('a-id').textContent   = data.member.id;
+      $('a-name').textContent = data.member.name;
+      $('a-shop').textContent = data.member.shop;
+      $('a-pt').textContent   = `${data.member.points} P`;
+      show('already');
+      return;
+    }
+
+    if (staffCode && data.staffName) {
+      $('staffName').textContent = data.staffName;
+      $('staffBox').style.display = 'block';
+    }
+    $('name').value = profile.displayName || '';
+    show('form');
+
+  } catch (e) {
+    $('errMsg').textContent = 'この画面はLINEアプリ内でお開きください。';
+    show('error');
+  }
+})();
+
+/* ---- 店名サジェスト ---- */
+const shopInput = $('shop'), shopList = $('shopList');
+shopInput.addEventListener('input', () => {
+  const v = shopInput.value.trim();
+  shopList.innerHTML = '';
+  if (!v) { shopList.classList.remove('on'); return; }
+  const hits = shopMaster.filter(s => s.includes(v)).slice(0, 6);
+  if (!hits.length) { shopList.classList.remove('on'); return; }
+  hits.forEach(s => {
+    const li = document.createElement('li');
+    li.textContent = s;
+    li.addEventListener('click', () => {
+      shopInput.value = s;
+      shopList.classList.remove('on');
+    });
+    shopList.appendChild(li);
+  });
+  shopList.classList.add('on');
+});
+document.addEventListener('click', e => {
+  if (!e.target.closest('.suggest')) shopList.classList.remove('on');
+});
+
+/* ---- 送信 ---- */
+$('submit').addEventListener('click', async () => {
+  const name = $('name').value.trim();
+  const shop = $('shop').value.trim();
+  let ok = true;
+  [['f-name', name.length > 0], ['f-shop', shop.length > 0]]
+    .forEach(([id, valid]) => {
+      $(id).classList.toggle('err', !valid);
+      if (!valid) ok = false;
+    });
+  if (!ok) return;
+
+  show('sending');
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action:'register', userId, name, shop, staff: staffCode })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'failed');
+
+    $('r-id').textContent   = data.member.id;
+    $('r-name').textContent = data.member.name;
+    $('r-shop').textContent = data.member.shop;
+    $('r-pt').textContent   = `${data.member.points} P`;
+    show('done');
+    setTimeout(() => { if (liff.isInClient()) liff.closeWindow(); }, 4000);
+
+  } catch (e) {
+    $('errMsg').textContent = '登録に失敗しました。通信環境をご確認のうえ、もう一度お試しください。';
+    show('error');
+  }
+});
+</script>
