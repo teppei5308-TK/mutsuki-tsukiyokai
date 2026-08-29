@@ -97,6 +97,17 @@ button.submit:active{background:var(--gold-l)}
 }
 @keyframes spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.spinner{animation:none}}
+
+  .refbox{margin-top:22px;padding:18px 16px;border:1px solid var(--line);border-radius:4px;text-align:left}
+  .refttl{font-size:.72rem;letter-spacing:.16em;color:var(--gold);margin-bottom:10px}
+  .refdesc{font-size:.78rem;color:var(--dim);line-height:1.8;margin-bottom:13px}
+  .refdesc b{color:#e0c88f}
+  .refurl{font-size:.7rem;word-break:break-all;background:rgba(255,255,255,.05);border-radius:3px;padding:10px 11px;line-height:1.6}
+  .refbtn{display:block;width:100%;margin-top:10px;padding:13px;background:transparent;
+    border:1px solid var(--gold);border-radius:3px;color:var(--gold);
+    font-size:.85rem;letter-spacing:.08em;font-family:inherit;cursor:pointer}
+  .refbtn:active{background:rgba(201,171,106,.15)}
+  .refbtn.done{background:var(--gold);color:#101a2c}
 </style>
 
 <div class="wrap">
@@ -154,8 +165,8 @@ button.submit:active{background:var(--gold-l)}
 <!-- ===== 完了 ===== -->
 <div class="state" id="done">
   <div class="icon">🌙</div>
-  <h2>ご登録ありがとうございます</h2>
-  <p>月夜会へのご登録が完了いたしました。</p>
+  <h2 id="d-title">ご登録ありがとうございます</h2>
+  <p id="d-msg">月夜会へのご登録が完了いたしました。</p>
   <div class="card">
     <dl>
       <dt>会員番号</dt><dd id="r-id">—</dd>
@@ -165,8 +176,18 @@ button.submit:active{background:var(--gold-l)}
     </dl>
   </div>
   <p style="font-size:.8rem;color:var(--dim)">
-    詳細はLINEのトークにお送りしました。<br>この画面は閉じていただいて構いません。
+    詳細はLINEのトークにお送りしました。
   </p>
+
+  <div class="refbox">
+    <div class="refttl">ご 紹 介 で ポ イ ン ト</div>
+    <p class="refdesc">
+      下のリンクをお知り合いにお送りください。<br>
+      ご登録で <b>0.5P</b>、そのお客さまがご来店されると さらに <b>1P</b> 加算されます。
+    </p>
+    <div class="refurl" id="ref-done">—</div>
+    <button type="button" class="refbtn" data-target="ref-done">リンクをコピー</button>
+  </div>
 </div>
 
 <!-- ===== 登録済み ===== -->
@@ -184,6 +205,16 @@ button.submit:active{background:var(--gold-l)}
   <p style="font-size:.8rem;color:var(--dim)">
     ご変更がある場合は、LINEのトークにご連絡ください。
   </p>
+
+  <div class="refbox">
+    <div class="refttl">ご 紹 介 で ポ イ ン ト</div>
+    <p class="refdesc">
+      下のリンクをお知り合いにお送りください。<br>
+      ご登録で <b>0.5P</b>、そのお客さまがご来店されると さらに <b>1P</b> 加算されます。
+    </p>
+    <div class="refurl" id="ref-already">—</div>
+    <button type="button" class="refbtn" data-target="ref-already">リンクをコピー</button>
+  </div>
 </div>
 
 <!-- ===== エラー ===== -->
@@ -212,6 +243,7 @@ const show = id => {
 
 let userId = null;
 let staffCode = new URLSearchParams(location.search).get('staff') || '';
+let refCode   = new URLSearchParams(location.search).get('ref')   || '';
 let shopMaster = [];
 
 /* ---- 起動 ---- */
@@ -226,7 +258,11 @@ let shopMaster = [];
     // liff.state に staff が入る場合の救済
     if (!staffCode) {
       const st = new URLSearchParams(location.search).get('liff.state');
-      if (st) staffCode = new URLSearchParams(st.replace(/^\?/, '')).get('staff') || '';
+      if (st) {
+        const q = new URLSearchParams(st.replace(/^\?/, ''));
+        staffCode = q.get('staff') || '';
+        if (!refCode) refCode = q.get('ref') || '';
+      }
     }
 
     const res = await fetch(`${GAS_URL}?action=check&userId=${encodeURIComponent(userId)}`);
@@ -239,6 +275,7 @@ let shopMaster = [];
       $('a-name').textContent = data.member.name;
       $('a-shop').textContent = data.member.shop;
       $('a-pt').textContent   = `${data.member.points} P`;
+      setRefLink('ref-already', data.member.id);
       show('already');
       return;
     }
@@ -296,15 +333,20 @@ $('submit').addEventListener('click', async () => {
     const res = await fetch(GAS_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ action:'register', userId, name, shop, staff: staffCode })
+      body: JSON.stringify({ action:'register', userId, name, shop, staff: staffCode, ref: refCode })
     });
     const data = await res.json();
     if (!data.ok) throw new Error(data.error || 'failed');
 
+    if (data.migrated) {
+      $('d-title').textContent = 'ポイントを引き継ぎました';
+      $('d-msg').textContent   = 'これまでのポイントをそのままお使いいただけます。';
+    }
     $('r-id').textContent   = data.member.id;
     $('r-name').textContent = data.member.name;
     $('r-shop').textContent = data.member.shop;
     $('r-pt').textContent   = `${data.member.points} P`;
+    setRefLink('ref-done', data.member.id);
     show('done');
     setTimeout(() => { if (liff.isInClient()) liff.closeWindow(); }, 4000);
 
@@ -313,4 +355,35 @@ $('submit').addEventListener('click', async () => {
     show('error');
   }
 });
+
+function setRefLink(elId, memberId) {
+  if (!memberId) return;
+  const el = document.getElementById(elId);
+  if (el) el.textContent = `https://liff.line.me/${LIFF_ID}?ref=${encodeURIComponent(memberId)}`;
+}
+
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest && e.target.closest('.refbtn');
+  if (!btn) return;
+  const el = document.getElementById(btn.dataset.target);
+  if (!el) return;
+  const text = el.textContent.trim();
+  if (!text || text === '\u2014') return;
+  const ok = () => {
+    btn.textContent = 'コピーしました';
+    btn.classList.add('done');
+    setTimeout(() => { btn.textContent = 'リンクをコピー'; btn.classList.remove('done'); }, 2000);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(ok).catch(() => fallbackCopy(text, ok));
+  } else { fallbackCopy(text, ok); }
+});
+
+function fallbackCopy(text, cb) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); cb(); } catch (e) {}
+  document.body.removeChild(ta);
+}
 </script>
