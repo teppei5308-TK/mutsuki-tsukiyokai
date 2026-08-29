@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>月夜会 ポイント2倍キャンペーン｜高級肉料理専門店 夢月</title>
+<meta name="description" content="9月1日〜15日限定。月夜会LINEからのご予約でポイント2倍。">
+<style>
+  :root{
+    --navy:#0f1829;
+    --navy2:#16213a;
+    --card:#1b2842;
+    --gold:#c9ab6a;
+    --gold-l:#e0c88f;
+    --txt:#eef1f6;
+    --dim:#93a0b8;
+    --line:#2c3b58;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-text-size-adjust:100%}
+  body{
+    background:var(--navy);
+    color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif;
+    line-height:1.75;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .wrap{max-width:520px;margin:0 auto;padding:0 20px 64px}
+
+  /* ---- header ---- */
+  header{text-align:center;padding:40px 20px 28px}
+  .brand{
+    font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
+    font-size:1.5rem;letter-spacing:.5em;color:var(--gold);
+    text-indent:.5em;
+  }
+  .brand-sub{font-size:.62rem;letter-spacing:.22em;color:var(--dim);margin-top:8px}
+
+  /* ---- hero ---- */
+  .hero{
+    border:1px solid var(--gold);
+    border-radius:4px;
+    padding:32px 20px 28px;
+    text-align:center;
+    background:linear-gradient(180deg,rgba(201,171,106,.10),rgba(201,171,106,0));
+  }
+  .hero-label{
+    font-size:.68rem;letter-spacing:.24em;color:var(--gold);
+    border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:20px;
+  }
+  .hero h1{
+    font-family:"Hiragino Mincho ProN","Yu Mincho",serif;
+    font-size:1.9rem;font-weight:600;line-height:1.45;letter-spacing:.04em;
+  }
+  .hero h1 .x2{
+    display:block;font-size:3.6rem;color:var(--gold-l);
+    letter-spacing:.02em;margin:4px 0 2px;
+  }
+  .period{margin-top:22px;font-size:.95rem;letter-spacing:.04em}
+  .period small{display:block;font-size:.7rem;color:var(--dim);letter-spacing:.16em;margin-bottom:6px}
+
+  /* ---- section ---- */
+  section{margin-top:44px}
+  h2{
+    font-size:.72rem;letter-spacing:.22em;color:var(--gold);
+    padding-bottom:10px;border-bottom:1px solid var(--line);margin-bottom:20px;
+  }
+
+  /* ---- conditions ---- */
+  .cond{list-style:none}
+  .cond li{
+    display:flex;gap:14px;align-items:flex-start;
+    padding:14px 0;border-bottom:1px dashed var(--line);
+  }
+  .cond li:last-child{border-bottom:none}
+  .cond .n{
+    flex:0 0 24px;height:24px;border:1px solid var(--gold);border-radius:50%;
+    color:var(--gold);font-size:.72rem;display:flex;align-items:center;justify-content:center;
+    margin-top:3px;
+  }
+  .cond .t{font-size:.95rem}
+  .cond .t em{display:block;font-style:normal;font-size:.78rem;color:var(--dim);margin-top:3px}
+  .targets{margin-top:11px;font-size:.83rem;line-height:1.6}
+  .targets div{
+    background:var(--card);border-radius:3px;padding:9px 12px;margin-bottom:6px;
+    border-left:2px solid var(--gold);
+  }
+  .targets div:last-child{margin-bottom:0}
+  .targets span{
+    display:block;color:var(--gold);font-size:.72rem;
+    letter-spacing:.06em;margin-bottom:2px;
+  }
+
+  /* ---- time slots ---- */
+  .slots{display:grid;gap:10px}
+  .slot{
+    background:var(--card);border-radius:4px;padding:14px 18px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .slot .p{font-size:.72rem;color:var(--gold);letter-spacing:.14em}
+  .slot .h{font-size:1.12rem;letter-spacing:.06em;font-variant-numeric:tabular-nums}
+
+  /* ---- points table ---- */
+  .pt{width:100%;border-collapse:collapse;font-size:.92rem}
+  .pt th{
+    font-size:.68rem;color:var(--dim);font-weight:400;letter-spacing:.1em;
+    padding-bottom:10px;text-align:right;
+  }
+  .pt th:first-child{text-align:left}
+  .pt td{padding:13px 0;border-top:1px solid var(--line);text-align:right}
+  .pt td:first-child{text-align:left}
+  .pt .was{color:var(--dim);text-decoration:line-through;font-size:.85rem}
+  .pt .now{color:var(--gold-l);font-size:1.15rem;font-weight:600}
+
+  /* ---- CTA ---- */
+  .cta{
+    display:block;margin-top:26px;padding:19px;
+    background:var(--gold);color:#101a2c;text-align:center;
+    font-size:1rem;font-weight:700;letter-spacing:.12em;
+    border-radius:4px;text-decoration:none;
+  }
+  .cta-note{text-align:center;font-size:.72rem;color:var(--dim);margin-top:11px}
+
+  /* ---- rewards ---- */
+  .rw{list-style:none;font-size:.9rem}
+  .rw li{display:flex;gap:16px;padding:11px 0;border-bottom:1px solid var(--line)}
+  .rw li:last-child{border-bottom:none}
+  .rw .p{
+    flex:0 0 46px;text-align:right;color:var(--gold);
+    font-variant-numeric:tabular-nums;font-weight:600;
+  }
+
+  /* ---- notes ---- */
+  .notes{list-style:none;font-size:.8rem;color:var(--dim);line-height:1.85}
+  .notes li{padding-left:1.1em;text-indent:-1.1em}
+  .notes li::before{content:"※ "}
+
+  /* ---- mypage ---- */
+  .sub{
+    display:block;margin-top:14px;padding:15px;
+    border:1px solid var(--line);border-radius:4px;
+    text-align:center;color:var(--txt);text-decoration:none;font-size:.88rem;
+  }
+  .sub span{color:var(--dim);font-size:.74rem;display:block;margin-top:3px}
+
+  footer{text-align:center;margin-top:52px;font-size:.72rem;color:var(--dim);letter-spacing:.1em}
+  footer .n{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;color:var(--gold);font-size:.86rem;letter-spacing:.2em}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">夢　月</div>
+  <div class="brand-sub">TSUKIYOKAI  MEMBERS</div>
+</header>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="hero-label">月 夜 会 会 員 限 定</div>
+    <h1>ポイント<span class="x2">2倍</span>キャンペーン</h1>
+    <div class="period">
+      <small>期　間</small>
+      9月1日<span style="font-size:.8em">（火）</span> 〜 9月15日<span style="font-size:.8em">（火）</span>
+    </div>
+  </div>
+
+  <section>
+    <h2>ご 利 用 条 件</h2>
+    <ul class="cond">
+      <li>
+        <div class="n">1</div>
+        <div class="t">月夜会LINEからの事前予約
+          <em>お電話・当日のご予約は対象外となります</em></div>
+      </li>
+      <li>
+        <div class="n">2</div>
+        <div class="t">対象コースのご利用
+          <em>下記4コースが対象です</em>
+          <div class="targets">
+            <div><span>16,500円</span>阿蘇あか牛 × 熊本県産馬肉 食べ比べコース</div>
+            <div><span>16,500円</span>熊本県産馬肉 × 天草大王地鶏 食べ比べコース</div>
+            <div><span>16,500円</span>阿蘇あか牛 × 天草大王地鶏 食べ比べコース</div>
+            <div><span>22,000円</span>三種鉄板 食べ比べコース<br>（馬肉・天草大王地鶏・あか牛）</div>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="n">3</div>
+        <div class="t">下記いずれかの時間帯でのご予約
+          <em>3部制でご案内しております</em></div>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>ご 予 約 時 間</h2>
+    <div class="slots">
+      <div class="slot"><div class="p">1 部</div><div class="h">19:00 − 21:00</div></div>
+      <div class="slot"><div class="p">2 部</div><div class="h">19:30 − 21:30</div></div>
+      <div class="slot"><div class="p">3 部</div><div class="h">20:00 − 22:00</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>期 間 中 の 付 与 ポ イ ン ト</h2>
+    <table class="pt">
+      <tr><th>内　容</th><th>通常</th><th>期間中</th></tr>
+      <tr><td>同伴でのご来店</td><td class="was">2P</td><td class="now">4P</td></tr>
+      <tr><td>ご来店</td><td class="was">1P</td><td class="now">2P</td></tr>
+      <tr><td>ご紹介</td><td class="was">1P</td><td class="now">2P</td></tr>
+    </table>
+
+    <a class="cta" href="https://u.lin.ee/PPJGYrd">L I N E で 予 約 す る</a>
+    <div class="cta-note">タップするとLINEの予約画面が開きます</div>
+  </section>
+
+  <section>
+    <h2>ポ イ ン ト 特 典</h2>
+    <ul class="rw">
+      <li><div class="p">6P</div><div>乾杯のシャンパン進呈</div></li>
+      <li><div class="p">10P</div><div>三日月コース 1食無料</div></li>
+      <li><div class="p">20P</div><div>来店指名 1時間</div></li>
+      <li><div class="p">30P</div><div>同伴来店指名 1時間＋シャンパン1本</div></li>
+      <li><div class="p">60P</div><div>満月コース無料＋同伴来店指名 2時間</div></li>
+      <li><div class="p">100P</div><div>上記＋シャンパン1本／VIP会員へ昇格</div></li>
+    </ul>
+
+    <a class="sub" href="https://liff.line.me/2011255200-CFSCJNPe">
+      ポイント残高を確認する
+      <span>未登録の方はこちらから会員登録いただけます</span>
+    </a>
+  </section>
+
+  <section>
+    <h2>ご 注 意</h2>
+    <ul class="notes">
+      <li>他のキャンペーン・割引との併用はできません。</li>
+      <li>ポイントはご来店当日に付与いたします。後日の申請はお受けできかねます。</li>
+      <li>ご予約時間を大幅に過ぎてのご来店は、対象外となる場合がございます。</li>
+      <li>キャンセルされた場合はポイント付与の対象外となります。</li>
+      <li>ポイントの確認・特典のお申し込みは、LINEのトークにご連絡ください。</li>
+    </ul>
+  </section>
+
+  <footer>
+    <div class="n">高級肉料理専門店　夢　月</div>
+    <div style="margin-top:8px">月　夜　会</div>
+  </footer>
+
+</div>
+</body>
+</html>
