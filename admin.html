@@ -90,6 +90,25 @@ label{display:block;font-size:.8rem;color:var(--gold-l);margin:1.1rem 0 .35rem;l
 .spinner{width:30px;height:30px;border:2px solid var(--line);border-top-color:var(--gold);border-radius:50%;margin:2rem auto;animation:sp .8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.spinner{animation:none}}
+
+  .castnote{font-size:.8rem;color:var(--dim);line-height:1.8;margin:4px 0 12px}
+  .castnote b{color:var(--gold)}
+  #castText{
+    width:100%;background:var(--card);border:1px solid var(--line);border-radius:4px;
+    color:var(--txt);font-family:inherit;font-size:.95rem;line-height:1.7;
+    padding:14px;resize:vertical;
+  }
+  #castText:focus{outline:none;border-color:var(--gold)}
+  .castbtn{
+    display:block;width:100%;margin-top:12px;padding:17px;
+    background:var(--gold);border:none;border-radius:4px;
+    color:#101a2c;font-size:1rem;font-weight:700;letter-spacing:.1em;
+    font-family:inherit;cursor:pointer;
+  }
+  .castbtn:disabled{opacity:.5}
+  #castMsg{margin-top:12px;font-size:.85rem;line-height:1.7}
+  #castMsg.ok{color:#7fd6a2;border-left:3px solid #7fd6a2;padding-left:10px}
+  #castMsg.ng{color:#e0897a;border-left:3px solid #e0897a;padding-left:10px}
 </style>
 
 <header>
@@ -115,11 +134,19 @@ label{display:block;font-size:.8rem;color:var(--gold-l);margin:1.1rem 0 .35rem;l
     <div class="tabs">
       <button class="on" data-t="members">会員から選ぶ</button>
       <button data-t="history">最近の履歴</button>
+      <button data-t="cast">配信</button>
     </div>
     <input type="text" id="q" placeholder="お名前・お店で絞り込み" autocomplete="off">
   </div>
   <div id="listArea"><div class="spinner"></div></div>
   <div id="histArea" style="display:none"><div class="spinner"></div></div>
+  <div id="castArea" style="display:none">
+    <p class="castnote">登録済みの月夜会メンバー <b id="castCount">—</b> 名に送信します。<br>
+    友だち追加していない方には届きません。1名につき配信数1通を消費します。</p>
+    <textarea id="castText" rows="9" placeholder="送信する本文を入力&#10;（1000文字まで）"></textarea>
+    <button type="button" id="castBtn" class="castbtn">この内容で送信する</button>
+    <div id="castMsg"></div>
+  </div>
 </div>
 
 <!-- 付与 -->
@@ -191,7 +218,7 @@ function renderList() {
   if (!hit.length) { $('listArea').innerHTML = '<div class="empty">該当する会員がいません</div>'; return; }
   $('listArea').innerHTML = '<div class="mlist">' + hit.map((m,i) =>
     `<div class="m${m.linked ? '' : ' unlinked'}" data-i="${members.indexOf(m)}">
-       <div><div class="nm">${esc(m.name)}</div><div class="sh">${esc(m.shop)}　${esc(m.id)}</div></div>
+       <div><div class="nm">${esc(m.name)}</div><div class="sh">${esc(m.shop)}　${esc(m.id)}${m.expiry ? `　期限 ${esc(m.expiry)}` : ''}</div></div>
        <div class="pt">${m.points}<small>P</small></div>
      </div>`).join('') + '</div>';
   document.querySelectorAll('.m').forEach(el => {
@@ -204,10 +231,14 @@ document.querySelectorAll('.tabs button').forEach(b => {
   b.onclick = async () => {
     document.querySelectorAll('.tabs button').forEach(x => x.classList.remove('on'));
     b.classList.add('on');
-    const isHist = b.dataset.t === 'history';
-    $('listArea').style.display = isHist ? 'none' : 'block';
+    const t = b.dataset.t;
+    const isHist = t === 'history';
+    const isCast = t === 'cast';
+    $('listArea').style.display = (isHist || isCast) ? 'none' : 'block';
     $('histArea').style.display = isHist ? 'block' : 'none';
-    $('q').style.display = isHist ? 'none' : 'block';
+    $('castArea').style.display = isCast ? 'block' : 'none';
+    $('q').style.display = (isHist || isCast) ? 'none' : 'block';
+    if (isCast) { $('castCount').textContent = members.filter(m => m.linked).length; return; }
     if (isHist) {
       $('histArea').innerHTML = '<div class="spinner"></div>';
       const r = await api(`admin_history&pin=${encodeURIComponent(PIN)}`);
@@ -227,7 +258,7 @@ document.querySelectorAll('.tabs button').forEach(b => {
 function openGive(m) {
   target = m; amount = null; reason = null;
   $('g-name').firstChild.textContent = m.name;
-  $('g-shop').textContent = `${m.shop}　${m.id}`;
+  $('g-shop').textContent = `${m.shop}　${m.id}` + (m.expiry ? `　／　有効期限 ${m.expiry}` : '');
   $('g-pt').innerHTML = `${m.points} <small>P</small>`;
   document.querySelectorAll('#quick button,#reasons button').forEach(b => b.classList.remove('on'));
   $('amount').style.display = 'none'; $('amount').value = '';
@@ -287,6 +318,33 @@ function msg(type, text) {
   el.className = 'msg' + (type ? ` ${type} on` : '');
   el.textContent = text;
 }
+$('castBtn').onclick = async () => {
+  const text = $('castText').value.trim();
+  const n = members.filter(m => m.linked).length;
+  const msg = $('castMsg');
+  msg.className = ''; msg.textContent = '';
+  if (!text) { msg.className = 'ng'; msg.textContent = '本文を入力してください。'; return; }
+  if (!confirm(`${n}名のメンバーに送信します。よろしいですか？\n\n※取り消しはできません`)) return;
+  $('castBtn').disabled = true;
+  $('castBtn').textContent = '送信中…';
+  try {
+    const res = await fetch(GAS_URL, {
+      method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action:'admin_broadcast', pin:PIN, text:text })
+    });
+    const d = await res.json();
+    if (!d.ok) throw new Error(d.error || '失敗しました');
+    msg.className = 'ok';
+    msg.textContent = `${d.sent}名に送信しました。`;
+    $('castText').value = '';
+  } catch (e) {
+    msg.className = 'ng';
+    msg.textContent = '送信できませんでした：' + e.message;
+  }
+  $('castBtn').disabled = false;
+  $('castBtn').textContent = 'この内容で送信する';
+};
+
 async function api(q) {
   try { const r = await fetch(`${GAS_URL}?action=${q}`); return await r.json(); }
   catch (e) { return { ok:false, error:'通信エラー' }; }
