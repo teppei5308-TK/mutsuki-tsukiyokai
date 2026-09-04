@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>カツサンド ご注文</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+  :root{
+    --navy:#0f1829; --navy2:#1a2744; --card:#1b2842;
+    --gold:#c9a961; --gold-l:#e0c88f;
+    --ivory:#f5f2ea; --dim:#8b93a5; --line:#2c3650; --err:#e0654a;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--navy);color:var(--ivory);
+    font-family:"Hiragino Sans","Yu Gothic",sans-serif;font-size:16px;line-height:1.7;
+  }
+  .wrap{max-width:480px;margin:0 auto;padding:0 20px 60px}
+  header{text-align:center;padding:34px 0 20px}
+  .mark{font-family:"Hiragino Mincho ProN","Yu Mincho",serif;font-size:1.3rem;letter-spacing:.4em;text-indent:.4em;color:var(--gold-l)}
+  .sub{font-size:.68rem;letter-spacing:.2em;color:var(--dim);margin-top:6px}
+  h1{font-size:1.15rem;font-weight:600;text-align:center;margin:0 0 20px;letter-spacing:.06em}
+
+  .state{display:none}
+  .state.on{display:block}
+  .spinner{margin:60px auto;width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  label{display:block;font-size:.78rem;color:var(--gold);letter-spacing:.12em;margin:18px 0 6px}
+  label small{color:var(--dim);letter-spacing:0;margin-left:6px}
+  input,select,textarea{
+    width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:4px;
+    background:var(--card);color:var(--ivory);font-size:1rem;font-family:inherit;
+  }
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold)}
+  .row{display:flex;gap:10px}
+  .row>div{flex:1}
+  .total{
+    margin-top:20px;padding:15px;border:1px solid var(--gold);border-radius:4px;
+    display:flex;justify-content:space-between;align-items:baseline;
+  }
+  .total b{color:var(--gold-l);font-size:1.4rem}
+  .btn{
+    display:block;width:100%;margin-top:20px;padding:17px;
+    background:var(--gold);border:none;border-radius:4px;
+    color:#101a2c;font-size:1.05rem;font-weight:700;letter-spacing:.1em;
+    font-family:inherit;cursor:pointer;
+  }
+  .btn:disabled{opacity:.5}
+  .err{color:var(--err);font-size:.82rem;margin-top:10px;display:none}
+  .icon{text-align:center;font-size:2.4rem;margin:40px 0 10px}
+  .done-card{background:var(--card);border-radius:4px;padding:18px;font-size:.9rem;margin-top:16px}
+  .note{font-size:.76rem;color:var(--dim);margin-top:14px;line-height:1.8}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="mark">夢　月</div>
+    <div class="sub">KATSU SANDO ORDER</div>
+  </header>
+
+  <div class="state on" id="loading"><div class="spinner"></div></div>
+
+  <div class="state" id="form">
+    <h1>カツサンド ご注文</h1>
+
+    <label>商品</label>
+    <select id="item">
+      <option value="特選和牛A5ヒレカツサンド|4000">A5ヒレカツサンド（4,000円）</option>
+      <option value="特選和牛A5サーロインカツサンド|3000">A5サーロインカツサンド（3,000円）</option>
+      <option value="特選和牛いちぼカツサンド|1500">いちぼカツサンド（1,500円）</option>
+      <option value="和牛A5メンチカツボール|1000">メンチカツボール（1,000円）</option>
+    </select>
+
+    <label>個数</label>
+    <select id="qty">
+      <option>1</option><option>2</option><option>3</option><option>4</option>
+      <option>5</option><option>6</option><option>8</option><option>10</option>
+    </select>
+
+    <div class="total"><span>合計（現地決済）</span><b id="total">4,000円</b></div>
+
+    <label>お名前</label>
+    <input id="name" type="text" autocomplete="off">
+
+    <label>配達先のお店</label>
+    <input id="shop" type="text" placeholder="例：スカイラウンジ" autocomplete="off">
+
+    <label>住所・ビル名<small>わかる範囲で</small></label>
+    <input id="addr" type="text" placeholder="例：西里251-1 D-LIFEビル2F" autocomplete="off">
+
+    <div class="row">
+      <div>
+        <label>希望日</label>
+        <input id="date" type="date">
+      </div>
+      <div>
+        <label>希望時間</label>
+        <select id="time">
+          <option>19:00頃</option><option>19:30頃</option><option>20:00頃</option>
+          <option>20:30頃</option><option>21:00頃</option><option>21:30頃</option>
+          <option>22:00頃</option><option>相談したい</option>
+        </select>
+      </div>
+    </div>
+
+    <label>お電話番号<small>任意</small></label>
+    <input id="tel" type="tel" autocomplete="off">
+
+    <label>備考<small>任意</small></label>
+    <textarea id="memo" rows="2" placeholder="のし・メッセージなど"></textarea>
+
+    <button type="button" class="btn" id="send">この内容で注文する</button>
+    <div class="err" id="errMsg"></div>
+    <p class="note">
+      ※ お受け取り・配達開始は9月7日（月）からです。<br>
+      ※ 1日各種限定20食。数に達した場合はご連絡のうえ日程をご相談します。<br>
+      ※ お作りしてから2時間以内にお召し上がりください。
+    </p>
+  </div>
+
+  <div class="state" id="done">
+    <div class="icon">🥪</div>
+    <h1>ご注文ありがとうございます</h1>
+    <div class="done-card" id="doneCard"></div>
+    <p class="note">確認のご連絡をLINEにお送りします。<br>変更・キャンセルはトークにご連絡ください。</p>
+  </div>
+
+  <div class="state" id="error">
+    <div class="icon">⚠️</div>
+    <h1>送信できませんでした</h1>
+    <p class="note" style="text-align:center">通信環境をご確認のうえ、もう一度お試しください。<br>お急ぎの場合はお電話（090-8292-2774）へ。</p>
+  </div>
+</div>
+
+<script>
+const LIFF_ID = "2011255200-CFSCJNPe";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbz7fer7Jsfp1VRb_bhaUJsP7PC3D2nZHJ0KYgJLUNPs_i69oWL9mROMNVQ2IagQ01HhyQ/exec";
+let userId = "";
+const $ = id => document.getElementById(id);
+function show(id){ document.querySelectorAll('.state').forEach(e=>e.classList.remove('on')); $(id).classList.add('on'); }
+
+function calc(){
+  const [,price] = $('item').value.split('|');
+  const t = Number(price) * Number($('qty').value);
+  $('total').textContent = t.toLocaleString() + '円';
+}
+$('item').onchange = calc; $('qty').onchange = calc;
+
+(async () => {
+  try{
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) { liff.login(); return; }
+    const p = await liff.getProfile();
+    userId = p.userId;
+
+    // クエリの item= で商品を初期選択
+    let q = new URLSearchParams(location.search);
+    const st = q.get('liff.state');
+    if (st) q = new URLSearchParams(st.replace(/^\?/, ''));
+    const pre = q.get('item');
+    if (pre) [...$('item').options].forEach(o => { if (o.value.startsWith(pre)) o.selected = true; });
+
+    // 会員登録済みなら名前を自動入力
+    try{
+      const r = await fetch(`${GAS_URL}?action=check&userId=${encodeURIComponent(userId)}`);
+      const d = await r.json();
+      if (d.registered) { $('name').value = d.member.name; $('shop').value = d.member.shop; }
+    }catch(e){}
+
+    // 希望日の初期値：今日（9/7より前なら9/7）
+    const today = new Date();
+    const start = new Date('2026-09-07');
+    const def = today < start ? start : today;
+    $('date').value = def.toISOString().slice(0,10);
+    $('date').min = new Date().toISOString().slice(0,10);
+
+    calc();
+    show('form');
+  }catch(e){ show('error'); }
+})();
+
+$('send').onclick = async () => {
+  const [item, price] = $('item').value.split('|');
+  const name = $('name').value.trim();
+  const shop = $('shop').value.trim();
+  const date = $('date').value;
+  const err = $('errMsg');
+  err.style.display = 'none';
+  if (!name || !shop || !date){
+    err.textContent = 'お名前・配達先のお店・希望日をご入力ください。';
+    err.style.display = 'block'; return;
+  }
+  $('send').disabled = true; $('send').textContent = '送信中…';
+  try{
+    const res = await fetch(GAS_URL, {
+      method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({
+        action:'katsu_order', userId, item, price, qty: $('qty').value,
+        name, shop, addr: $('addr').value.trim(),
+        date: date.replace(/-/g,'/'), time: $('time').value,
+        tel: $('tel').value.trim(), memo: $('memo').value.trim()
+      })
+    });
+    const d = await res.json();
+    if (!d.ok) throw new Error(d.error || 'failed');
+    $('doneCard').innerHTML =
+      `${item} × ${$('qty').value}<br>合計 ${$('total').textContent}（現地決済）<br>` +
+      `配達先：${shop}<br>希望日時：${date.replace(/-/g,'/')} ${$('time').value}`;
+    show('done');
+  }catch(e){
+    $('send').disabled = false; $('send').textContent = 'この内容で注文する';
+    err.textContent = '送信に失敗しました。もう一度お試しください。';
+    err.style.display = 'block';
+  }
+};
+</script>
+</body>
+</html>
