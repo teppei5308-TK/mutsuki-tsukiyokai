@@ -108,6 +108,13 @@ button.submit:active{background:var(--gold-l)}
     font-size:.85rem;letter-spacing:.08em;font-family:inherit;cursor:pointer}
   .refbtn:active{background:rgba(201,171,106,.15)}
   .refbtn.done{background:var(--gold);color:#101a2c}
+  .fradd{
+    display:none;margin-top:14px;padding:16px;
+    background:#06C755;border-radius:4px;text-align:center;
+    color:#fff;text-decoration:none;font-size:.92rem;font-weight:700;
+    letter-spacing:.06em;
+  }
+  .fradd span{display:block;font-size:.72rem;font-weight:400;opacity:.9;margin-top:3px}
 </style>
 
 <div class="wrap">
@@ -173,11 +180,15 @@ button.submit:active{background:var(--gold-l)}
       <dt>お名前</dt><dd id="r-name">—</dd>
       <dt>お店</dt><dd id="r-shop">—</dd>
       <dt>ポイント</dt><dd id="r-pt">0 P</dd>
+      <dt>有効期限</dt><dd id="r-exp">—</dd>
     </dl>
   </div>
   <p style="font-size:.8rem;color:var(--dim)">
     詳細はLINEのトークにお送りしました。
   </p>
+  <a class="fradd" href="https://lin.ee/WTr80NU">夢月の公式LINEを友だち追加
+    <span>ポイント通知・特典のご案内が届きます</span></a>
+
 
   <div class="refbox">
     <div class="refttl">ご 紹 介 で ポ イ ン ト</div>
@@ -200,11 +211,15 @@ button.submit:active{background:var(--gold-l)}
       <dt>お名前</dt><dd id="a-name">—</dd>
       <dt>お店</dt><dd id="a-shop">—</dd>
       <dt>ポイント</dt><dd id="a-pt">0 P</dd>
+      <dt>有効期限</dt><dd id="a-exp">—</dd>
     </dl>
   </div>
   <p style="font-size:.8rem;color:var(--dim)">
     ご変更がある場合は、LINEのトークにご連絡ください。
   </p>
+  <a class="fradd" href="https://lin.ee/WTr80NU">夢月の公式LINEを友だち追加
+    <span>ポイント通知・特典のご案内が届きます</span></a>
+
 
   <div class="refbox">
     <div class="refttl">ご 紹 介 で ポ イ ン ト</div>
@@ -244,6 +259,7 @@ const show = id => {
 let userId = null;
 let staffCode = new URLSearchParams(location.search).get('staff') || '';
 let refCode   = new URLSearchParams(location.search).get('ref')   || '';
+const ADD_FRIEND_URL = 'https://lin.ee/WTr80NU';
 let shopMaster = [];
 
 /* ---- 起動 ---- */
@@ -252,6 +268,7 @@ let shopMaster = [];
     await liff.init({ liffId: LIFF_ID });
     if (!liff.isLoggedIn()) { liff.login(); return; }
 
+    checkFriendship();
     const profile = await liff.getProfile();
     userId = profile.userId;
 
@@ -275,6 +292,7 @@ let shopMaster = [];
       $('a-name').textContent = data.member.name;
       $('a-shop').textContent = data.member.shop;
       $('a-pt').textContent   = `${data.member.points} P`;
+      $('a-exp').textContent  = data.member.expiry || '—';
       setRefLink('ref-already', data.member.id);
       show('already');
       return;
@@ -346,6 +364,7 @@ $('submit').addEventListener('click', async () => {
     $('r-name').textContent = data.member.name;
     $('r-shop').textContent = data.member.shop;
     $('r-pt').textContent   = `${data.member.points} P`;
+    $('r-exp').textContent  = data.member.expiry || '—';
     setRefLink('ref-done', data.member.id);
     show('done');
     setTimeout(() => { if (liff.isInClient()) liff.closeWindow(); }, 4000);
@@ -355,6 +374,16 @@ $('submit').addEventListener('click', async () => {
     show('error');
   }
 });
+
+async function checkFriendship() {
+  try {
+    const f = await liff.getFriendship();
+    if (f && f.friendFlag) return;
+    document.querySelectorAll('.fradd').forEach(e => e.style.display = 'block');
+  } catch (e) {
+    document.querySelectorAll('.fradd').forEach(e => e.style.display = 'block');
+  }
+}
 
 function setRefLink(elId, memberId) {
   if (!memberId) return;
